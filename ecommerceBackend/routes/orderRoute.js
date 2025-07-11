@@ -1,19 +1,22 @@
 const express = require("express");
 const {
-  newOrder,
-  getSingleOrder,
+  createOrder,
+  getOrder,
   myOrders,
+  cancelOrder,
   getAllOrders,
-  updateOrder,
-  deleteOrder,
+  updateOrderStatus,
 } = require("../controllers/orderController");
-const router = express.Router();
-
 const { isAuthenticatedUser, authorizeRoles } = require("../middlewares/auth");
 
-router.route("/order/new").post(isAuthenticatedUser, newOrder);
+const router = express.Router();
 
-router.route("/order/:id").get(isAuthenticatedUser, getSingleOrder);
+router.route("/order/new").post(isAuthenticatedUser, createOrder);
+
+router
+  .route("/order/:id")
+  .get(isAuthenticatedUser, getOrder)
+  .patch(isAuthenticatedUser, cancelOrder);
 
 router.route("/orders/me").get(isAuthenticatedUser, myOrders);
 
@@ -23,7 +26,6 @@ router
 
 router
   .route("/admin/order/:id")
-  .put(isAuthenticatedUser, authorizeRoles("admin"), updateOrder)
-  .delete(isAuthenticatedUser, authorizeRoles("admin"), deleteOrder);
+  .patch(isAuthenticatedUser, authorizeRoles("admin"), updateOrderStatus);
 
 module.exports = router;

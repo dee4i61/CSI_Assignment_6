@@ -1,61 +1,55 @@
 import api from "./api";
 
-// Create a new order
-export const createOrder = async (orderData) => {
+export const createOrder = async (data) => {
   try {
-    const { data } = await api.post("/order/new", orderData);
-    return data;
+    const response = await api.post("/order/new", data);
+    return response.data;
   } catch (error) {
-    throw error.response?.data || error;
+    throw error.response?.data || { message: "Failed to create order" };
   }
 };
 
-// Get order details
-export const getOrderDetails = async (id) => {
+export const getOrder = async (id) => {
   try {
-    const { data } = await api.get(`/order/${id}`);
-    return data;
+    const response = await api.get(`/order/${id}`);
+    return response.data;
   } catch (error) {
-    throw error.response?.data || error;
+    throw error.response?.data || { message: "Failed to fetch order" };
   }
 };
 
-// Get current user's orders
 export const getMyOrders = async () => {
   try {
-    const { data } = await api.get("/orders/me");
-    return data;
+    const response = await api.get("/orders/me");
+    return response.data;
   } catch (error) {
-    throw error.response?.data || error;
+    throw error.response?.data || { message: "Failed to fetch orders" };
   }
 };
 
-// Admin: Get all orders
+export const cancelOrder = async (id) => {
+  try {
+    const response = await api.patch(`/order/${id}`);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: "Failed to cancel order" };
+  }
+};
+
 export const getAllOrders = async () => {
   try {
-    const { data } = await api.get("/admin/orders");
-    return data;
+    const response = await api.get("/admin/orders");
+    return response.data;
   } catch (error) {
-    throw error.response?.data || error;
+    throw error.response?.data || { message: "Failed to fetch all orders" };
   }
 };
 
-// Admin: Update order status
 export const updateOrderStatus = async (id, status) => {
   try {
-    const { data } = await api.put(`/admin/order/${id}`, { status });
-    return data;
+    const response = await api.patch(`/admin/order/${id}`, { status });
+    return response.data;
   } catch (error) {
-    throw error.response?.data || error;
-  }
-};
-
-// Admin: Delete order
-export const deleteOrder = async (id) => {
-  try {
-    const { data } = await api.delete(`/admin/order/${id}`);
-    return data;
-  } catch (error) {
-    throw error.response?.data || error;
+    throw error.response?.data || { message: "Failed to update order status" };
   }
 };

@@ -1,80 +1,70 @@
 const mongoose = require("mongoose");
 
-const productSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: [true, "Please enter product name"],
-    trim: true,
-  },
-  description: {
-    type: String,
-    required: [true, "Please enter product description"],
-  },
-  price: {
-    type: Number,
-    required: [true, "Please enter product price"],
-    maxLength: [8, "Price cannot exceed 8 characters"],
-  },
-  ratings: {
-    type: Number,
-    default: 0,
-  },
-  images: [
-    {
-      public_id: {
-        type: String,
-        required: [true, "Image public_id is required"],
-      },
-      url: {
-        type: String,
-        required: [true, "Image URL is required"],
-      },
+const productSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: [true, "Please enter product name"],
+      trim: true,
     },
-  ],
-  category: {
-    type: String,
-    required: [true, "Please enter product category"],
-  },
-  Stock: {
-    type: Number,
-    required: [true, "Please enter product stock"],
-    maxLength: [4, "Stock cannot exceed 4 characters"],
-    default: 1,
-  },
-  numOfReviews: {
-    type: Number,
-    default: 0,
-  },
-  reviews: [
-    {
-      user: {
-        type: mongoose.Schema.ObjectId,
-        ref: "User",
-        required: true,
-      },
-      name: {
-        type: String,
-        required: true,
-      },
-      rating: {
-        type: Number,
-        required: true,
-      },
-      comment: {
-        type: String,
-        required: true,
-      },
+    description: {
+      type: String,
+      required: [true, "Please enter product description"],
     },
-  ],
-  user: {
-    type: mongoose.Schema.ObjectId,
-    ref: "User",
-    required: [true, "Product must be associated with a user"],
+    price: {
+      type: Number,
+      required: [true, "Please enter product price"],
+      maxLength: [8, "Price cannot exceed 8 characters"],
+    },
+    // ⭐ NEW SALE FIELDS
+    isBestseller: { type: Boolean, default: false },
+    isOnSale: { type: Boolean, default: false },
+    salePrice: { type: Number },
+    saleStart: { type: Date },
+    saleEnd: { type: Date },
+
+    ratings: { type: Number, default: 0 },
+
+    images: [
+      {
+        public_id: { type: String, required: true },
+        url: { type: String, required: true },
+      },
+    ],
+
+    category: {
+      type: mongoose.Schema.ObjectId,
+      ref: "Category",
+      required: [true, "Please enter a valid category"],
+    },
+
+    Stock: {
+      type: Number,
+      required: [true, "Please enter product stock"],
+      maxLength: [4, "Stock cannot exceed 4 characters"],
+      default: 1,
+    },
+
+    numOfReviews: { type: Number, default: 0 },
+
+    reviews: [
+      {
+        user: { type: mongoose.Schema.ObjectId, ref: "User", required: true },
+        name: { type: String, required: true },
+        rating: { type: Number, required: true },
+        comment: { type: String, required: true },
+      },
+    ],
+
+    user: {
+      type: mongoose.Schema.ObjectId,
+      ref: "User",
+      required: [true, "Product must be associated with a user"],
+    },
+
+    createdAt: { type: Date, default: Date.now },
   },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
-});
+  { timestamps: true }
+);
 
 module.exports = mongoose.model("Product", productSchema);

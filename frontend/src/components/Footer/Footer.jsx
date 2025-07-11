@@ -9,7 +9,7 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           {/* Company Info */}
           <div>
-            <h3 className="text-xl font-bold mb-4">EcoShop</h3>
+            <h3 className="text-xl font-bold mb-4">PopMart</h3>
             <p className="text-gray-300 text-sm leading-6">
               Your trusted online store for quality products and great deals.
             </p>
@@ -33,6 +33,14 @@ const Footer = () => {
                 </a>
               </li>
               <li>
+                <a
+                  href="/orders"
+                  className="hover:text-white transition-colors"
+                >
+                  Orders
+                </a>
+              </li>
+              <li>
                 <a href="/about" className="hover:text-white transition-colors">
                   About
                 </a>
@@ -53,23 +61,27 @@ const Footer = () => {
             <h4 className="text-lg font-semibold mb-4">Customer Service</h4>
             <ul className="space-y-3 text-gray-400 text-sm">
               <li>
-                <a href="#" className="hover:text-white transition-colors">
+                <a
+                  href="/contact"
+                  className="hover:text-white transition-colors"
+                >
                   Help Center
                 </a>
               </li>
               <li>
-                <a href="#" className="hover:text-white transition-colors">
+                <a
+                  href="/orders"
+                  className="hover:text-white transition-colors"
+                >
                   Returns
                 </a>
               </li>
               <li>
-                <a href="#" className="hover:text-white transition-colors">
+                <a
+                  href="/orders"
+                  className="hover:text-white transition-colors"
+                >
                   Shipping Info
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-white transition-colors">
-                  Size Guide
                 </a>
               </li>
             </ul>
@@ -85,7 +97,7 @@ const Footer = () => {
               </div>
               <div className="flex items-center space-x-3">
                 <Mail size={18} />
-                <span>support@shopease.com</span>
+                <span>support@demo.com</span>
               </div>
             </div>
 
@@ -117,7 +129,7 @@ const Footer = () => {
         <div className="border-t border-gray-700 pt-6">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <p className="text-gray-400 text-sm">
-              © 2025 ShopEase. All rights reserved.
+              © 2025 PopMart. All rights reserved.
             </p>
             <div className="flex space-x-6">
               <a

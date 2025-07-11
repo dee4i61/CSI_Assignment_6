@@ -22,6 +22,8 @@ import Cart from "./components/Cart/Cart";
 import Footer from "./components/Footer/Footer";
 import About from "./components/Home/About";
 import ContactUs from "./components/Home/ContactUs";
+import Orders from "./components/order/Orders";
+import OrderDetails from "./components/order/OrderDetails";
 
 // Wrapper to allow use of hooks inside Router
 const AppContent = () => {
@@ -52,6 +54,8 @@ const AppContent = () => {
           <Route path="/cart" element={<Cart />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<ContactUs />} />
+          <Route path="/orders" element={<Orders />} />
+          <Route path="/order/:id" element={<OrderDetails />} />
         </Routes>
       </div>
 

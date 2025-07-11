@@ -5,7 +5,6 @@ import {
   getUserDetails,
   updateProfile,
   updatePassword,
-  forgotPassword,
 } from "../../services/userServices";
 
 const Profile = () => {
@@ -102,24 +101,10 @@ const Profile = () => {
     }
   };
 
-  // Handle forgot password
-  const handleForgotPassword = async (e) => {
-    e.preventDefault();
-    setError("");
-    setSuccess("");
-    try {
-      await forgotPassword(forgotPasswordEmail);
-      setSuccess("Password reset email sent successfully!");
-    } catch (err) {
-      setError(err.message || "Failed to send password reset email.");
-    }
-  };
-
   const menuItems = [
     { id: "details", label: "User Details", icon: "👤" },
     { id: "updateProfile", label: "Update Profile", icon: "✏️" },
     { id: "changePassword", label: "Change Password", icon: "🔐" },
-    { id: "forgotPassword", label: "Forgot Password", icon: "🔑" },
   ];
 
   return (
@@ -152,16 +137,6 @@ const Profile = () => {
                   <span className="font-medium">{item.label}</span>
                 </button>
               ))}
-
-              <div className="pt-4 mt-6 border-t border-gray-200">
-                <button
-                  onClick={() => console.log("Navigate to home")}
-                  className="w-full flex items-center space-x-3 py-4 px-5 text-left rounded-xl bg-gray-800 text-white hover:bg-gray-700 transition-all duration-200 hover:shadow-lg"
-                >
-                  <span className="text-xl">🏠</span>
-                  <span className="font-medium">Back to Home</span>
-                </button>
-              </div>
             </div>
           </div>
         </div>
@@ -450,53 +425,6 @@ const Profile = () => {
                           className="w-full py-4 px-6 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 font-semibold shadow-lg"
                         >
                           Change Password
-                        </button>
-                      </form>
-                    </div>
-                  )}
-
-                  {activeSection === "forgotPassword" && (
-                    <div>
-                      <div className="flex items-center space-x-3 mb-8">
-                        <span className="text-2xl">🔑</span>
-                        <h3 className="text-2xl font-bold text-gray-800">
-                          Forgot Password
-                        </h3>
-                      </div>
-
-                      <div className="bg-blue-50 p-6 rounded-xl border border-blue-200/50 mb-6">
-                        <p className="text-blue-800 text-sm">
-                          Enter your email address and we'll send you a link to
-                          reset your password.
-                        </p>
-                      </div>
-
-                      <form
-                        onSubmit={handleForgotPassword}
-                        className="space-y-6"
-                      >
-                        <div>
-                          <label className="block text-sm font-semibold text-gray-700 mb-2">
-                            Email Address
-                          </label>
-                          <input
-                            type="email"
-                            name="email"
-                            value={forgotPasswordEmail}
-                            onChange={(e) =>
-                              setForgotPasswordEmail(e.target.value)
-                            }
-                            required
-                            className="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white/50 backdrop-blur-sm"
-                            placeholder="Enter your email address"
-                          />
-                        </div>
-
-                        <button
-                          type="submit"
-                          className="w-full py-4 px-6 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 font-semibold shadow-lg"
-                        >
-                          Send Reset Email
                         </button>
                       </form>
                     </div>

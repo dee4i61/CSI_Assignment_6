@@ -155,18 +155,6 @@ const About = () => {
           </div>
         </div>
       </div>
-
-      {/* Contact CTA */}
-      <div className="text-center bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-8 text-white">
-        <h2 className="text-2xl font-bold mb-4">Ready to Shop With Us?</h2>
-        <p className="text-lg mb-6">
-          Join thousands of satisfied customers who trust us for their shopping
-          needs.
-        </p>
-        <button className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
-          Start Shopping
-        </button>
-      </div>
     </div>
   );
 };

@@ -7,7 +7,9 @@ import {
   MessageSquare,
   Send,
   CheckCircle,
+  AlertCircle,
 } from "lucide-react";
+import { createContactMessage } from "../../services/contactServices";
 
 const ContactUs = () => {
   const [formData, setFormData] = useState({
@@ -15,9 +17,10 @@ const ContactUs = () => {
     email: "",
     subject: "",
     message: "",
-    orderNumber: "",
+    phone_no: "",
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [error, setError] = useState(null);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -27,22 +30,25 @@ const ContactUs = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Simulate form submission
-    console.log("Form submitted:", formData);
-    setIsSubmitted(true);
-    // Reset form after 3 seconds
-    setTimeout(() => {
-      setIsSubmitted(false);
-      setFormData({
-        name: "",
-        email: "",
-        subject: "",
-        message: "",
-        orderNumber: "",
-      });
-    }, 3000);
+    try {
+      await createContactMessage(formData);
+      setIsSubmitted(true);
+      setError(null);
+      setTimeout(() => {
+        setIsSubmitted(false);
+        setFormData({
+          name: "",
+          email: "",
+          subject: "",
+          message: "",
+          phone_no: "",
+        });
+      }, 3000);
+    } catch (err) {
+      setError(err.message || "Failed to send message");
+    }
   };
 
   if (isSubmitted) {
@@ -85,6 +91,12 @@ const ContactUs = () => {
           <h2 className="text-2xl font-bold text-gray-900 mb-6">
             Send us a Message
           </h2>
+          {error && (
+            <div className="mb-6 p-4 bg-red-50 rounded-lg flex items-center">
+              <AlertCircle className="w-6 h-6 text-red-600 mr-2" />
+              <p className="text-red-600">{error}</p>
+            </div>
+          )}
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid md:grid-cols-2 gap-4">
               <div>
@@ -153,19 +165,19 @@ const ContactUs = () => {
               </div>
               <div>
                 <label
-                  htmlFor="orderNumber"
+                  htmlFor="phone_no"
                   className="block text-sm font-medium text-gray-700 mb-2"
                 >
-                  Order Number (optional)
+                  Phone Number (optional)
                 </label>
                 <input
-                  type="text"
-                  id="orderNumber"
-                  name="orderNumber"
-                  value={formData.orderNumber}
+                  type="tel"
+                  id="phone_no"
+                  name="phone_no"
+                  value={formData.phone_no}
                   onChange={handleInputChange}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="e.g., #12345"
+                  placeholder="e.g., +1 (555) 123-4567"
                 />
               </div>
             </div>
@@ -271,7 +283,7 @@ const ContactUs = () => {
             <h2 className="text-2xl font-bold text-gray-900 mb-6">
               Quick Help
             </h2>
-            <div className="space-y-4">
+            <div className=" مقاومت: space-y-4">
               <div className="border-l-4 border-blue-500 pl-4">
                 <h3 className="font-semibold text-gray-900">Order Status</h3>
                 <p className="text-sm text-gray-600">

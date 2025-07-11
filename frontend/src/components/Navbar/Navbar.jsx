@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Search,
   User,
@@ -9,10 +9,12 @@ import {
   ChevronDown,
   LogOut,
   UserCircle,
+  LogIn,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../../redux/slices/userSlice";
+import { getAllCategories } from "../../services/categoryService";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -23,19 +25,21 @@ const Navbar = () => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [categories, setCategories] = useState([]);
+  const [categoryError, setCategoryError] = useState(null);
 
-  const categories = [
-    "Electronics",
-    "Clothing & Fashion",
-    "Home & Garden",
-    "Sports & Outdoors",
-    "Books & Media",
-    "Beauty & Health",
-    "Toys & Games",
-    "Automotive",
-    "Food & Beverages",
-    "Office Supplies",
-  ];
+  // Fetch categories on component mount
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const data = await getAllCategories();
+        setCategories(data);
+      } catch (error) {
+        setCategoryError(error.message || "Failed to load categories");
+      }
+    };
+    fetchCategories();
+  }, []);
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
   const toggleProfile = () => setIsProfileOpen(!isProfileOpen);
@@ -52,81 +56,169 @@ const Navbar = () => {
     }
   };
 
-  // Logout Handler
   const handleLogout = async () => {
     try {
       await dispatch(logout()).unwrap();
-      // Close any open menus
       setIsProfileOpen(false);
       setIsMenuOpen(false);
-      // Navigate to home page or login page
       navigate("/");
     } catch (error) {
       console.error("Logout failed:", error);
-      // You can add toast notification here if needed
     }
   };
 
   return (
-    <nav className="sticky top-0 z-50 bg-white shadow-lg border-b border-gray-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <div className="flex-shrink-0 flex items-center">
+    <nav className="sticky top-0 z-50 bg-blue-50 shadow-md border-b border-blue-200">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+        {/* First Row: Logo, Search, and Action Icons */}
+        <div className="flex justify-between items-center mb-3">
+          {/* Left: Logo */}
+          <div className="flex items-center">
             <div
               className="flex items-center space-x-2 cursor-pointer"
-              onClick={() => navigate(`/`)}
+              onClick={() => navigate("/")}
             >
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">E</span>
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-700 rounded-lg flex items-center justify-center shadow-sm">
+                <span className="text-white font-bold text-base">P</span>
               </div>
-              <span className="text-xl font-bold text-gray-800 hidden sm:block">
-                EcoShop
+              <span className="text-xl font-semibold text-blue-900 hidden sm:block">
+                PopMart
               </span>
             </div>
           </div>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-1 flex-1 justify-center">
-            {/* Navigation Links */}
+          {/* Center: Search Bar */}
+          <div className="relative hidden md:block flex-1 mx-4 max-w-2xl">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="Search products..."
+              className="w-full pl-10 pr-3 py-2 border border-blue-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200 bg-blue-50 text-blue-900 placeholder-blue-400 text-sm"
+            />
             <button
-              onClick={() => navigate("/")}
-              className="px-3 py-2 text-gray-700 hover:text-blue-600 font-medium transition-colors duration-200"
+              onClick={handleSearch}
+              className="absolute left-3 top-2.5 text-blue-500 hover:text-blue-700 transition-colors duration-200"
             >
-              Home
+              <Search className="h-4 w-4" />
             </button>
+          </div>
 
+          {/* Right: Action Icons */}
+          <div className="flex items-center space-x-4">
             <button
-              onClick={() => navigate("/products")}
-              className="px-3 py-2 text-gray-700 hover:text-blue-600 font-medium transition-colors duration-200"
+              className="p-1 text-blue-600 hover:text-blue-800 transition-colors duration-200 group"
+              onClick={() => navigate("/wishlist")}
             >
-              Products
+              <Heart className="h-5 w-5 group-hover:scale-105 transition-transform duration-200" />
             </button>
-
-            {/* Categories Dropdown */}
-            <div className="relative">
-              <button
-                onClick={toggleCategories}
-                className="flex items-center space-x-1 px-3 py-2 text-gray-700 hover:text-blue-600 font-medium transition-colors duration-200"
-              >
-                <span>Categories</span>
-                <ChevronDown
-                  className={`w-4 h-4 transition-transform duration-200 ${
-                    isCategoriesOpen ? "rotate-180" : ""
-                  }`}
-                />
-              </button>
-
-              {isCategoriesOpen && (
-                <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50">
-                  {categories.map((category, index) => (
+            <button
+              className="p-1 text-blue-600 hover:text-blue-800 transition-colors duration-200 group"
+              onClick={() => navigate("/cart")}
+            >
+              <ShoppingCart className="h-5 w-5 group-hover:scale-105 transition-transform duration-200" />
+            </button>
+            {user ? (
+              <div className="relative">
+                <button
+                  onClick={toggleProfile}
+                  className="flex items-center space-x-1 p-1 text-blue-600 hover:text-blue-800 transition-colors duration-200"
+                >
+                  <User className="h-5 w-5" />
+                  <ChevronDown
+                    className={`w-4 h-4 transition-transform duration-200 ${
+                      isProfileOpen ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+                {isProfileOpen && (
+                  <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-blue-100 py-2 z-50">
                     <button
-                      key={index}
-                      className="w-full text-left px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200"
+                      className="w-full text-left px-4 py-2 text-blue-700 hover:bg-blue-50 hover:text-blue-900 transition-colors duration-200 flex items-center space-x-2 text-sm"
                       onClick={() => {
-                        console.log("Selected category:", category);
+                        navigate("/profile");
+                        setIsProfileOpen(false);
+                      }}
+                    >
+                      <UserCircle className="h-4 w-4" />
+                      <span>Profile</span>
+                    </button>
+                    <button
+                      className="w-full text-left px-4 py-2 text-blue-700 hover:bg-red-50 hover:text-red-600 transition-colors duration-200 flex items-center space-x-2 text-sm disabled:opacity-50"
+                      onClick={handleLogout}
+                      disabled={loading}
+                    >
+                      <LogOut className="h-4 w-4" />
+                      <span>{loading ? "Logging out..." : "Logout"}</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="flex items-center space-x-2">
+                <button
+                  className="text-blue-700 hover:text-blue-900 font-medium text-sm transition-colors duration-200"
+                  onClick={() => navigate("/login")}
+                >
+                  <span className="hidden sm:inline">Login</span>
+                  <LogIn className="h-5 w-5 sm:hidden" />
+                </button>
+                <span className="text-blue-500">/</span>
+                <button
+                  className="text-blue-700 hover:text-blue-900 font-medium text-sm transition-colors duration-200"
+                  onClick={() => navigate("/signup")}
+                >
+                  <span className="hidden sm:inline">Signup</span>
+                  <UserCircle className="h-5 w-5 sm:hidden" />
+                </button>
+              </div>
+            )}
+            <button
+              className="md:hidden p-1 text-blue-600 hover:text-blue-800 transition-colors duration-200"
+              onClick={toggleMenu}
+            >
+              {isMenuOpen ? (
+                <X className="h-5 w-5" />
+              ) : (
+                <Menu className="h-5 w-5" />
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Second Row: Navigation Links and Categories */}
+        <div className="hidden md:flex justify-center space-x-6">
+          <div className="relative">
+            <button
+              onClick={toggleCategories}
+              className="flex items-center space-x-1 py-2 text-blue-700 hover:text-blue-900 font-medium text-sm transition-colors duration-200 border-b-2 border-transparent hover:border-blue-500"
+            >
+              <span>Categories</span>
+              <ChevronDown
+                className={`w-4 h-4 transition-transform duration-200 ${
+                  isCategoriesOpen ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+            {isCategoriesOpen && (
+              <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-blue-100 py-2 z-50">
+                {categoryError ? (
+                  <div className="px-4 py-2 text-red-600 text-sm">
+                    Error: {categoryError}
+                  </div>
+                ) : categories.length === 0 ? (
+                  <div className="px-4 py-2 text-blue-600 text-sm">
+                    Loading categories...
+                  </div>
+                ) : (
+                  categories.map((category) => (
+                    <button
+                      key={category._id}
+                      className="w-full text-left px-4 py-2 text-blue-700 hover:bg-blue-50 hover:text-blue-900 transition-colors duration-200 text-sm"
+                      onClick={() => {
                         navigate(
-                          `/category/${category
+                          `/category/${category.name
                             .toLowerCase()
                             .replace(/\s+/g, "-")
                             .replace(/&/g, "and")}`
@@ -134,29 +226,50 @@ const Navbar = () => {
                         setIsCategoriesOpen(false);
                       }}
                     >
-                      {category}
+                      {category.name}
                     </button>
-                  ))}
-                </div>
-              )}
-            </div>
+                  ))
+                )}
+              </div>
+            )}
+          </div>
+          <button
+            onClick={() => navigate("/")}
+            className="py-2 text-blue-700 hover:text-blue-900 font-medium text-sm transition-colors duration-200 border-b-2 border-transparent hover:border-blue-500"
+          >
+            Home
+          </button>
+          <button
+            onClick={() => navigate("/products")}
+            className="py-2 text-blue-700 hover:text-blue-900 font-medium text-sm transition-colors duration-200 border-b-2 border-transparent hover:border-blue-500"
+          >
+            Products
+          </button>
+          <button
+            onClick={() => navigate("/orders")}
+            className="py-2 text-blue-700 hover:text-blue-900 font-medium text-sm transition-colors duration-200 border-b-2 border-transparent hover:border-blue-500"
+          >
+            Orders
+          </button>
+          <button
+            onClick={() => navigate("/about")}
+            className="py-2 text-blue-700 hover:text-blue-900 font-medium text-sm transition-colors duration-200 border-b-2 border-transparent hover:border-blue-500"
+          >
+            About Us
+          </button>
+          <button
+            onClick={() => navigate("/contact")}
+            className="py-2 text-blue-700 hover:text-blue-900 font-medium text-sm transition-colors duration-200 border-b-2 border-transparent hover:border-blue-500"
+          >
+            Contact Us
+          </button>
+        </div>
 
-            <button
-              onClick={() => navigate("/about")}
-              className="px-3 py-2 text-gray-700 hover:text-blue-600 font-medium transition-colors duration-200"
-            >
-              About Us
-            </button>
-
-            <button
-              onClick={() => navigate("/contact")}
-              className="px-3 py-2 text-gray-700 hover:text-blue-600 font-medium transition-colors duration-200"
-            >
-              Contact Us
-            </button>
-
-            {/* Search Bar */}
-            <div className="flex-1 max-w-lg ml-4">
+        {/* Mobile Menu */}
+        {isMenuOpen && (
+          <div className="md:hidden bg-blue-50 border-t border-blue-200 py-3">
+            <div className="px-4 space-y-3">
+              {/* Mobile Search */}
               <div className="relative">
                 <input
                   type="text"
@@ -164,221 +277,192 @@ const Navbar = () => {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyPress={handleKeyPress}
                   placeholder="Search products..."
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all duration-200"
+                  className="w-full pl-10 pr-3 py-2 border border-blue-300 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none bg-blue-50 text-blue-900 placeholder-blue-400 text-sm"
                 />
                 <button
                   onClick={handleSearch}
-                  className="absolute left-3 top-2.5 h-5 w-5 text-gray-400 hover:text-blue-600 transition-colors duration-200"
+                  className="absolute left-3 top-2.5 text-blue-500 hover:text-blue-700 transition-colors duration-200"
                 >
-                  <Search className="h-5 w-5" />
+                  <Search className="h-4 w-4" />
                 </button>
               </div>
-            </div>
-          </div>
 
-          {/* Desktop Action Buttons */}
-          <div className="hidden md:flex items-center space-x-4">
-            {/* Wishlist */}
-            <button
-              className="relative p-2 text-gray-700 hover:text-red-500 transition-colors duration-200 group"
-              onClick={() => navigate(`/wishlist`)}
-            >
-              <Heart className="h-6 w-6 group-hover:scale-110 transition-transform duration-200" />
-              {/* <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                3
-              </span> */}
-            </button>
-
-            {/* Cart */}
-            <button
-              className="relative p-2 text-gray-700 hover:text-blue-600 transition-colors duration-200 group"
-              onClick={() => navigate(`/cart`)}
-            >
-              <ShoppingCart className="h-6 w-6 group-hover:scale-110 transition-transform duration-200" />
-              {/* <span className="absolute -top-2 -right-2 bg-blue-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                2
-              </span> */}
-            </button>
-
-            {/* Profile Dropdown */}
-            <div className="relative">
-              <button
-                onClick={toggleProfile}
-                className="flex items-center space-x-1 p-2 text-gray-700 hover:text-blue-600 transition-colors duration-200"
-              >
-                <User className="h-6 w-6" />
-                <ChevronDown
-                  className={`w-4 h-4 transition-transform duration-200 ${
-                    isProfileOpen ? "rotate-180" : ""
-                  }`}
-                />
-              </button>
-
-              {isProfileOpen && (
-                <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50">
+              {/* Mobile Navigation */}
+              <div className="space-y-2">
+                <div className="border-t border-blue-200 pt-2">
                   <button
-                    className="w-full text-left px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors duration-200 flex items-center space-x-2"
-                    onClick={() => {
-                      navigate(`/profile`);
-                      setIsProfileOpen(false);
-                    }}
+                    onClick={toggleCategories}
+                    className="w-full text-left px-4 py-2 text-blue-700 hover:text-blue-900 font-medium text-sm flex items-center justify-between"
                   >
-                    <UserCircle className="h-4 w-4" />
-                    <span>Profile</span>
+                    <span>Categories</span>
+                    <ChevronDown
+                      className={`w-4 h-4 transition-transform duration-200 ${
+                        isCategoriesOpen ? "rotate-180" : ""
+                      }`}
+                    />
                   </button>
-                  <button
-                    className="w-full text-left px-4 py-2 text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors duration-200 flex items-center space-x-2 disabled:opacity-50"
-                    onClick={handleLogout}
-                    disabled={loading}
-                  >
-                    <LogOut className="h-4 w-4" />
-                    <span>{loading ? "Logging out..." : "Logout"}</span>
-                  </button>
+                  {isCategoriesOpen && (
+                    <div className="pl-6 space-y-2 mt-2">
+                      {categoryError ? (
+                        <div className="px-4 py-2 text-red-600 text-sm">
+                          Error: {categoryError}
+                        </div>
+                      ) : categories.length === 0 ? (
+                        <div className="px-4 py-2 text-blue-600 text-sm">
+                          Loading categories...
+                        </div>
+                      ) : (
+                        categories.map((category) => (
+                          <button
+                            key={category._id}
+                            className="w-full text-left px-4 py-2 text-blue-600 hover:text-blue-900 text-sm transition-colors duration-200"
+                            onClick={() => {
+                              navigate(
+                                `/category/${category.name
+                                  .toLowerCase()
+                                  .replace(/\s+/g, "-")
+                                  .replace(/&/g, "and")}`
+                              );
+                              setIsMenuOpen(false);
+                              setIsCategoriesOpen(false);
+                            }}
+                          >
+                            {category.name}
+                          </button>
+                        ))
+                      )}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-          </div>
-
-          {/* Mobile Menu Button */}
-          <div className="md:hidden">
-            <button
-              onClick={toggleMenu}
-              className="p-2 text-gray-700 hover:text-blue-600 transition-colors duration-200"
-            >
-              {isMenuOpen ? (
-                <X className="h-6 w-6" />
-              ) : (
-                <Menu className="h-6 w-6" />
-              )}
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile Menu */}
-        {isMenuOpen && (
-          <div className="md:hidden bg-white border-t border-gray-200">
-            <div className="px-2 pt-2 pb-3 space-y-1">
-              {/* Mobile Search */}
-              <div className="mb-4">
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    placeholder="Search products..."
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-                  />
-                  <button
-                    onClick={handleSearch}
-                    className="absolute left-3 top-2.5 h-5 w-5 text-gray-400 hover:text-blue-600 transition-colors duration-200"
-                  >
-                    <Search className="h-5 w-5" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Mobile Categories */}
-              <div className="border-b border-gray-200 pb-2 mb-2">
                 <button
-                  onClick={toggleCategories}
-                  className="w-full text-left px-3 py-2 text-gray-700 hover:text-blue-600 font-medium flex items-center justify-between"
+                  className="w-full text-left px-4 py-2 text-blue-700 hover:text-blue-900 font-medium text-sm transition-colors duration-200"
+                  onClick={() => {
+                    navigate("/");
+                    setIsMenuOpen(false);
+                  }}
                 >
-                  <span>Categories</span>
-                  <ChevronDown
-                    className={`w-4 h-4 transition-transform duration-200 ${
-                      isCategoriesOpen ? "rotate-180" : ""
-                    }`}
-                  />
+                  Home
                 </button>
-
-                {isCategoriesOpen && (
-                  <div className="pl-6 space-y-1">
-                    {categories.map((category, index) => (
-                      <button
-                        key={index}
-                        className="w-full text-left px-3 py-2 text-sm text-gray-600 hover:text-blue-600 transition-colors duration-200"
-                        onClick={() => {
-                          console.log("Selected category:", category);
-                          setIsMenuOpen(false);
-                        }}
-                      >
-                        {category}
-                      </button>
-                    ))}
-                  </div>
-                )}
+                <button
+                  className="w-full text-left px-4 py-2 text-blue-700 hover:text-blue-900 font-medium text-sm transition-colors duration-200"
+                  onClick={() => {
+                    navigate("/products");
+                    setIsMenuOpen(false);
+                  }}
+                >
+                  Products
+                </button>
+                <button
+                  className="w-full text-left px-4 py-2 text-blue-700 hover:text-blue-900 font-medium text-sm transition-colors duration-200"
+                  onClick={() => {
+                    navigate("/orders");
+                    setIsMenuOpen(false);
+                  }}
+                >
+                  Orders
+                </button>
+                <button
+                  className="w-full text-left px-4 py-2 text-blue-700 hover:text-blue-900 font-medium text-sm transition-colors duration-200"
+                  onClick={() => {
+                    navigate("/about");
+                    setIsMenuOpen(false);
+                  }}
+                >
+                  About Us
+                </button>
+                <button
+                  className="w-full text-left px-4 py-2 text-blue-700 hover:text-blue-900 font-medium text-sm transition-colors duration-200"
+                  onClick={() => {
+                    navigate("/contact");
+                    setIsMenuOpen(false);
+                  }}
+                >
+                  Contact Us
+                </button>
               </div>
 
               {/* Mobile Action Buttons */}
-              <div className="space-y-2">
+              <div className="border-t border-blue-200 pt-3 space-y-2">
                 <button
-                  className="w-full flex items-center justify-between px-3 py-2 text-gray-700 hover:text-red-500 transition-colors duration-200"
+                  className="w-full flex items-center space-x-2 px-4 py-2 text-blue-700 hover:text-red-500 text-sm transition-colors duration-200"
                   onClick={() => {
-                    navigate(`/wishlist`);
+                    navigate("/wishlist");
                     setIsMenuOpen(false);
                   }}
                 >
-                  <div className="flex items-center space-x-2">
-                    <Heart className="h-5 w-5" />
-                    <span>Wishlist</span>
-                  </div>
-                  <span className="bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                    3
-                  </span>
+                  <Heart className="h-4 w-4" />
+                  <span>Wishlist</span>
                 </button>
-
                 <button
-                  className="w-full flex items-center justify-between px-3 py-2 text-gray-700 hover:text-blue-600 transition-colors duration-200"
+                  className="w-full flex items-center space-x-2 px-4 py-2 text-blue-700 hover:text-blue-900 text-sm transition-colors duration-200"
                   onClick={() => {
-                    navigate(`/cart`);
+                    navigate("/cart");
                     setIsMenuOpen(false);
                   }}
                 >
-                  <div className="flex items-center space-x-2">
-                    <ShoppingCart className="h-5 w-5" />
-                    <span>Cart</span>
-                  </div>
-                  <span className="bg-blue-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                    2
-                  </span>
+                  <ShoppingCart className="h-4 w-4" />
+                  <span>Cart</span>
                 </button>
-
-                <button
-                  className="w-full flex items-center space-x-2 px-3 py-2 text-gray-700 hover:text-blue-600 transition-colors duration-200"
-                  onClick={() => {
-                    navigate(`/profile`);
-                    setIsMenuOpen(false);
-                  }}
-                >
-                  <UserCircle className="h-5 w-5" />
-                  <span>Profile</span>
-                </button>
-
-                <button
-                  className="w-full flex items-center space-x-2 px-3 py-2 text-gray-700 hover:text-red-600 transition-colors duration-200 disabled:opacity-50"
-                  onClick={handleLogout}
-                  disabled={loading}
-                >
-                  <LogOut className="h-5 w-5" />
-                  <span>{loading ? "Logging out..." : "Logout"}</span>
-                </button>
+                {user ? (
+                  <>
+                    <button
+                      className="w-full flex items-center space-x-2 px-4 py-2 text-blue-700 hover:text-blue-900 text-sm transition-colors duration-200"
+                      onClick={() => {
+                        navigate("/virtual-assistant");
+                        setIsMenuOpen(false);
+                      }}
+                    >
+                      <UserCircle className="h-4 w-4" />
+                      <span>Virtual Assistant</span>
+                    </button>
+                    <button
+                      className="w-full flex items-center space-x-2 px-4 py-2 text-blue-700 hover:text-blue-900 text-sm transition-colors duration-200"
+                      onClick={() => {
+                        navigate("/profile");
+                        setIsMenuOpen(false);
+                      }}
+                    >
+                      <UserCircle className="h-4 w-4" />
+                      <span>Profile</span>
+                    </button>
+                    <button
+                      className="w-full flex items-center space-x-2 px-4 py-2 text-blue-700 hover:text-red-600 text-sm transition-colors duration-200 disabled:opacity-50"
+                      onClick={handleLogout}
+                      disabled={loading}
+                    >
+                      <LogOut className="h-4 w-4" />
+                      <span>{loading ? "Logging out..." : "Logout"}</span>
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      className="w-full flex items-center space-x-2 px-4 py-2 text-blue-700 hover:text-blue-900 text-sm transition-colors duration-200"
+                      onClick={() => {
+                        navigate("/login");
+                        setIsMenuOpen(false);
+                      }}
+                    >
+                      <LogIn className="h-4 w-4" />
+                      <span>Login</span>
+                    </button>
+                    <button
+                      className="w-full flex items-center space-x-2 px-4 py-2 text-blue-700 hover:text-blue-900 text-sm transition-colors duration-200"
+                      onClick={() => {
+                        navigate("/signup");
+                        setIsMenuOpen(false);
+                      }}
+                    >
+                      <UserCircle className="h-4 w-4" />
+                      <span>Signup</span>
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           </div>
         )}
       </div>
-
-      {/* Backdrop for dropdowns */}
-      {(isProfileOpen || isCategoriesOpen) && (
-        <div
-          className="fixed inset-0 z-40"
-          onClick={() => {
-            setIsProfileOpen(false);
-            setIsCategoriesOpen(false);
-          }}
-        />
-      )}
     </nav>
   );
 };
