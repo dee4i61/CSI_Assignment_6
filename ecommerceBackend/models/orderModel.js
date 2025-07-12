@@ -33,13 +33,22 @@ const orderSchema = new mongoose.Schema(
       city: { type: String, required: true },
       state: { type: String, required: true },
       country: { type: String, required: true, default: "India" },
-      pinCode: { type: String, required: true },
+      postalCode: { type: String, required: true },
       phoneNo: { type: String, required: true },
     },
 
     paymentInfo: {
-      id: String, // Razorpay/Stripe/etc.
+      id: String,
       status: String,
+      method: {
+        type: String,
+        enum: ["Online", "COD"],
+        default: "Online",
+      },
+      codPaid: {
+        type: Boolean,
+        default: false,
+      },
     },
 
     taxPrice: { type: Number, default: 0 },

@@ -7,9 +7,11 @@ import {
   clearCartItems,
 } from "../../redux/slices/cartSlice";
 import { ShoppingCart, X, Star } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Cart = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const { items = [], status, error } = useSelector((state) => state.cart);
   const user = useSelector((state) => state.user?.user || null);
@@ -60,6 +62,10 @@ const Cart = () => {
   const handleUpdateQuantity = (productId, quantity) => {
     if (!userId || !productId || quantity < 1) return;
     dispatch(updateItemQuantity({ userId, productId, quantity }));
+  };
+
+  const handlecheckout = () => {
+    navigate("/checkout");
   };
 
   const handleClearCart = () => {
@@ -294,7 +300,11 @@ const Cart = () => {
                       ₹{calculateTotal()}
                     </span>
                   </div>
-                  <button className="w-full bg-gradient-to-r from-blue-500 to-teal-400 text-white py-3 rounded-full hover:from-blue-600 hover:to-teal-500 transition-all duration-300 shadow-md hover:shadow-lg font-medium">
+                  <button
+                    className="w-full bg-gradient-to-r from-blue-500 to-teal-400 text-white py-3 rounded-full hover:from-blue-600 hover:to-teal-500 transition-all duration-300 shadow-md hover:shadow-lg font-medium"
+                    onClick={handlecheckout}
+                    disabled={items.length === 0}
+                  >
                     Proceed to Checkout
                   </button>
                   <button

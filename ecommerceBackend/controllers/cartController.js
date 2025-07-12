@@ -1,4 +1,3 @@
-// controllers/cartController.js
 const CartItem = require("../models/cartModel");
 
 // Add to cart

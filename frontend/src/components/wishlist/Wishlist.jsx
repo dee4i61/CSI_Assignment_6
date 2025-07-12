@@ -24,7 +24,7 @@ const Wishlist = () => {
     "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=400&fit=crop",
     "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=400&fit=crop",
     "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400&h=400&fit=crop",
-    "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400&h=400&fit=crop",
+    "https://images.unsplash.com/photo-1599623560574-39d485900c95?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
   ];
 
   // State to track image loading status for each product

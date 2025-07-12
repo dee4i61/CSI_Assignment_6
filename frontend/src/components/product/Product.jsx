@@ -17,7 +17,7 @@ import {
   Filter,
   Search,
 } from "lucide-react";
-import ProductSidebar from "./ProductSidebar ";
+import ProductSidebar from "./ProductSidebar";
 import CategoryBar from "./CategoryBar";
 import Pagination from "./Pagination";
 
@@ -257,18 +257,29 @@ const Product = () => {
           )}
         </button>
 
-        {/* Stock Badge */}
-        {product.Stock <= 5 && product.Stock > 0 && (
-          <div className="absolute top-2 left-2 bg-orange-500 text-white px-2 py-1 rounded text-xs font-medium">
-            {product.Stock} left
-          </div>
-        )}
-
-        {product.Stock === 0 && (
-          <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded text-xs font-medium">
-            Out of Stock
-          </div>
-        )}
+        {/* Badges */}
+        <div className="absolute top-2 left-2 space-y-1">
+          {product.isBestseller && (
+            <div className="bg-yellow-500 text-white px-2 py-1 rounded text-xs font-medium">
+              Bestseller
+            </div>
+          )}
+          {product.isOnSale && (
+            <div className="bg-green-500 text-white px-2 py-1 rounded text-xs font-medium">
+              Sale
+            </div>
+          )}
+          {product.Stock <= 5 && product.Stock > 0 && (
+            <div className="bg-orange-500 text-white px-2 py-1 rounded text-xs font-medium">
+              {product.Stock} left
+            </div>
+          )}
+          {product.Stock === 0 && (
+            <div className="bg-red-500 text-white px-2 py-1 rounded text-xs font-medium">
+              Out of Stock
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Product Info */}
@@ -294,7 +305,7 @@ const Product = () => {
         {/* Price */}
         <div className="flex items-center justify-between mb-3">
           <span className="text-lg font-bold text-blue-600">
-            ${product.price?.toFixed(2)}
+            ₹{product.price?.toFixed(2)}
           </span>
           <span className="text-xs text-gray-500">
             {product.Stock} in stock

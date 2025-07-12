@@ -1,23 +1,55 @@
+const multer = require("multer");
 const Product = require("../models/productModel");
 const Category = require("../models/categoryModel");
 const ErrorHandler = require("../utils/errorhander");
 const catchAsyncErrors = require("../middlewares/catchAsyncErrors");
 
-const assertValidCategory = async (categoryId) => {
-  if (!categoryId || !categoryId.match(/^[0-9a-fA-F]{24}$/))
-    throw new ErrorHandler("Invalid category ID", 400);
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads/");
+  },
+  filename: (req, file, cb) => {
+    cb(null, `${Date.now()}-${file.originalname}`);
+  },
+});
 
-  const exists = await Category.exists({ _id: categoryId });
-  if (!exists) throw new ErrorHandler("Category not found", 400);
+const upload = multer({
+  storage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit per file
+});
+
+const assertValidCategory = async (categoryId) => {
+  if (!categoryId || !categoryId.match(/^[0-9a-fA-F]{24}$/)) {
+    throw new ErrorHandler("Invalid category ID", 400);
+  }
+  const category = await Category.findById(categoryId).select("name");
+  if (!category) {
+    throw new ErrorHandler("Category not found", 400);
+  }
+  return category;
 };
 
 exports.createProduct = catchAsyncErrors(async (req, res, next) => {
-  await assertValidCategory(req.body.category);
+  upload.array("images", 5)(req, res, async (err) => {
+    if (err) {
+      return res.status(400).json({ success: false, message: err.message });
+    }
 
-  req.body.user = req.user.id;
-  const product = await Product.create(req.body);
+    await assertValidCategory(req.body.category);
 
-  res.status(201).json({ success: true, product });
+    req.body.user = req.user.id;
+
+    if (req.files && req.files.length > 0) {
+      req.body.images = req.files.map((file) => ({
+        url: `/uploads/${file.filename}`,
+        public_id: file.filename,
+      }));
+    }
+
+    const product = await Product.create(req.body);
+
+    res.status(201).json({ success: true, product });
+  });
 });
 
 exports.getAllProducts = async (req, res, next) => {
@@ -92,36 +124,68 @@ exports.getProductDetails = catchAsyncErrors(async (req, res, next) => {
 });
 
 exports.updateProduct = catchAsyncErrors(async (req, res, next) => {
-  // Validate category only if changed
-  if (req.body.category) await assertValidCategory(req.body.category);
-
-  // Handle sale‑flag logic
-  if (typeof req.body.isOnSale !== "undefined") {
-    req.body.isOnSale = !!req.body.isOnSale;
-
-    if (req.body.isOnSale) {
-      if (!req.body.salePrice)
-        return next(
-          new ErrorHandler("salePrice required when isOnSale=true", 400)
-        );
-    } else {
-      // If turning off sale, clear related fields
-      req.body.salePrice = undefined;
-      req.body.saleStart = undefined;
-      req.body.saleEnd = undefined;
+  console.log("req.body:", req.body);
+  // Handle file uploads with multer
+  upload.array("images", 5)(req, res, async (err) => {
+    if (err) {
+      return res.status(400).json({ success: false, message: err.message });
     }
-  }
 
-  let product = await Product.findById(req.params.id);
-  if (!product) return next(new ErrorHandler("Product not found", 404));
+    // Check if req.body is defined
+    if (!req.body) {
+      return next(new ErrorHandler("Request body is missing", 400));
+    }
 
-  product = await Product.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
-    runValidators: true,
-    useFindAndModify: false,
+    // Validate category if provided
+    if (req.body.category) {
+      try {
+        await assertValidCategory(req.body.category);
+      } catch (err) {
+        return next(new ErrorHandler(err.message, 400));
+      }
+    }
+
+    // Handle sale-flag logic
+    if (typeof req.body.isOnSale !== "undefined") {
+      req.body.isOnSale = !!req.body.isOnSale;
+
+      if (req.body.isOnSale) {
+        if (!req.body.salePrice) {
+          return next(
+            new ErrorHandler("salePrice required when isOnSale=true", 400)
+          );
+        }
+      } else {
+        // If turning off sale, clear related fields
+        req.body.salePrice = undefined;
+        req.body.saleStart = undefined;
+        req.body.saleEnd = undefined;
+      }
+    }
+
+    // Handle images if provided
+    if (req.files && req.files.length > 0) {
+      req.body.images = req.files.map((file) => ({
+        url: `/uploads/${file.filename}`,
+        public_id: file.filename,
+      }));
+    }
+
+    // Find product
+    let product = await Product.findById(req.params.id);
+    if (!product) {
+      return next(new ErrorHandler("Product not found", 404));
+    }
+
+    // Update product
+    product = await Product.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true,
+      useFindAndModify: false,
+    });
+
+    res.status(200).json({ success: true, product });
   });
-
-  res.status(200).json({ success: true, product });
 });
 
 exports.deleteProduct = catchAsyncErrors(async (req, res, next) => {

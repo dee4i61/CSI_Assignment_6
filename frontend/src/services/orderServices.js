@@ -53,3 +53,14 @@ export const updateOrderStatus = async (id, status) => {
     throw error.response?.data || { message: "Failed to update order status" };
   }
 };
+
+export const markCodPaid = async (id, paid = true) => {
+  try {
+    const response = await api.patch(`/admin/order/${id}/cod-paid`, { paid });
+    return response.data;
+  } catch (error) {
+    throw (
+      error.response?.data || { message: "Failed to mark COD payment status" }
+    );
+  }
+};

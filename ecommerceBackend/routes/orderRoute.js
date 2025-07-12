@@ -6,6 +6,7 @@ const {
   cancelOrder,
   getAllOrders,
   updateOrderStatus,
+  markCodPaid,
 } = require("../controllers/orderController");
 const { isAuthenticatedUser, authorizeRoles } = require("../middlewares/auth");
 
@@ -27,5 +28,9 @@ router
 router
   .route("/admin/order/:id")
   .patch(isAuthenticatedUser, authorizeRoles("admin"), updateOrderStatus);
+
+router
+  .route("/admin/order/:id/cod-paid")
+  .patch(isAuthenticatedUser, authorizeRoles("admin"), markCodPaid);
 
 module.exports = router;

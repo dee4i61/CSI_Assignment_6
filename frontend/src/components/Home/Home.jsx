@@ -95,7 +95,7 @@ const Home = () => {
     "https://images.unsplash.com/photo-1498049794561-7780e7231661?w=300&h=200&fit=crop",
     "https://images.unsplash.com/photo-1445205170230-053b83016050?w=300&h=200&fit=crop",
     "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=300&h=200&fit=crop",
-    "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=300&h=200&fit=crop",
+    "https://images.unsplash.com/photo-1599623560574-39d485900c95?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
   ];
 
   useEffect(() => {

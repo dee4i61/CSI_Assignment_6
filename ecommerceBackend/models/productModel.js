@@ -67,4 +67,13 @@ const productSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+function autoPopulateCategory(next) {
+  this.populate("category", "name");
+  next();
+}
+
+productSchema.pre("find", autoPopulateCategory);
+productSchema.pre("findOne", autoPopulateCategory);
+productSchema.pre("findOneAndUpdate", autoPopulateCategory);
+
 module.exports = mongoose.model("Product", productSchema);

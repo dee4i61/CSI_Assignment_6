@@ -5,14 +5,29 @@ exports.createOrder = async (req, res, next) => {
     const {
       orderItems,
       shippingInfo,
-      paymentInfo,
-      taxPrice,
-      shippingPrice,
+      paymentInfo = {}, 
+      taxPrice = 0,
+      shippingPrice = 0,
       totalPrice,
     } = req.body;
 
     if (!orderItems || orderItems.length === 0) {
       return res.status(400).json({ success: false, message: "No items." });
+    }
+
+    // Validate / normalise payment method
+    const method = paymentInfo.method || "Online";
+    if (!["Online", "COD"].includes(method)) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid payment method" });
+    }
+
+    if (method === "COD") {
+      delete paymentInfo.id;
+      delete paymentInfo.status;
+      paymentInfo.method = "COD";
+      paymentInfo.codPaid = false;
     }
 
     const order = await Order.create({
@@ -37,11 +52,9 @@ exports.getOrder = async (req, res, next) => {
       "customer_id",
       "name email"
     );
-
     if (!order)
       return res.status(404).json({ success: false, message: "Not found" });
 
-    // Users can only view their own order unless admin
     if (
       order.customer_id._id.toString() !== req.user._id.toString() &&
       req.user.role !== "admin"
@@ -82,11 +95,16 @@ exports.cancelOrder = async (req, res, next) => {
         .status(400)
         .json({ success: false, message: "Already cancelled" });
     }
-
     if (order.orderStatus === "Delivered") {
       return res.status(400).json({
         success: false,
         message: "Delivered orders can’t be cancelled",
+      });
+    }
+    if (order.paymentInfo.method === "COD" && order.paymentInfo.codPaid) {
+      return res.status(400).json({
+        success: false,
+        message: "Cash already collected – contact support",
       });
     }
 
@@ -111,7 +129,7 @@ exports.getAllOrders = async (req, res, next) => {
 
 exports.updateOrderStatus = async (req, res, next) => {
   try {
-    const { status } = req.body; // expect Processing → Shipped → Delivered
+    const { status } = req.body;
     const order = await Order.findById(req.params.id);
 
     if (!order)
@@ -122,7 +140,33 @@ exports.updateOrderStatus = async (req, res, next) => {
     }
 
     order.orderStatus = status;
-    if (status === "Delivered") order.deliveredAt = new Date();
+    if (status === "Delivered") {
+      order.deliveredAt = new Date();
+      if (order.paymentInfo.method === "COD") order.paymentInfo.codPaid = true;
+    }
+    await order.save();
+
+    res.status(200).json({ success: true, order });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.markCodPaid = async (req, res, next) => {
+  try {
+    const { paid = true } = req.body;
+    const order = await Order.findById(req.params.id);
+
+    if (!order)
+      return res.status(404).json({ success: false, message: "Not found" });
+
+    if (order.paymentInfo.method !== "COD") {
+      return res
+        .status(400)
+        .json({ success: false, message: "Not a COD order" });
+    }
+
+    order.paymentInfo.codPaid = !!paid;
     await order.save();
 
     res.status(200).json({ success: true, order });
